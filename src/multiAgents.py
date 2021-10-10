@@ -121,44 +121,61 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def getAction(self, gameState):
         """
-		Returns the minimax action from the current gameState using self.depth
-		and self.evaluationFunction.
-		"""
-        agentIndex = self.depth % gameState.getNumAgents()
-        print(agentIndex)
-        print(self.depth)
-        print(gameState.getNumAgents())
+        Returns the minimax action from the current gameState using self.depth
+        and self.evaluationFunction.
+        """
 
-        return self.minimax(gameState, self.depth, agentIndex)
-        # Pacman(index 0) is the max agent
+        return self.miniMax(gameState, 0, 0)
 
-    def minimax(self, state, depth, agent):
-        if state.isWin() or state.isLose():
+    def miniMax(self, state, depth, agent):
+        """
+        Calls the correct method for calculating next action, value pair for state.
+        This has to be done because it needs to handle multiple min-layers in Minimax-tree
+        :param state: Current state of game
+        :param depth: Current depth of Minimax-tree
+        :return: action, action_evaluation (either MIN or MAX)
+        """
+
+        # Game over - return value of the state
+        if depth == self.depth * state.getNumAgents() or state.isWin() or state.isLose():
             return self.evaluationFunction(state)
 
-        if agent >= 1:
-            return self.minValue(state, depth, agent)
+        
+
+        if agent == 0 or self.num_agents == agent: # Pac's turn!
+            return self.maxValue(state, depth, 0)
         else:
-            return self.maxValue(state, depth, agent)
+            return self.minValue(state, depth, agent)
 
-    # Pacman
-    def maxValue(self, state, depth, agent):
-        value = float("-inf")
+
+    # PACMAN
+    def maxValue(self, state, current_depth, agent):
+        """
+        Calculates the action with maximum value in Minimax-tree
+        :param current_depth: Current depth in Minimax-tree
+        :param state: Current gamestate
+        :return: action, action_evaluation
+        """
+        # bestValue = float("inf")
+
+        return max(self.miniMax(state.generateSuccessor(agent, action), current_depth + 1, agent=1) for action in state.getLegalActions(agent))
         
-        for action in state.getLegalActions(0):
-            nextState = state.generateSuccessor(agent, action)
-            value = max(value, self.minimax(nextState, depth, 1, agent))
-        return value
+        # return bestValue
 
-
-    # Ghost
-    def minValue(self, state, depth, agent):
-        value = float("inf")
         
-        for action in state.getLegalActions(0):
-            nextState = state.generateSuccessor(agent, action)
-            value = min(value, self.minimax(nextState, depth, 1, agent))
-        return value
+    def minValue(self, state, current_depth, agent):
+        """
+        Calculates the action for a ghost with minimum value in Minimax-tree
+        :param state: Current gamestate
+        :param current_depth: Current depth in Minimax-tree. current_depth % state.getNumAgents gives current ghost
+        :return: action, action_evaluation
+        """
+        # bestValue = float("-inf")
+            
+
+        return min(self.miniMax(state.generateSuccessor(agent, action), current_depth, agent=1) for action in state.getLegalActions(agent))
+        
+        # return bestValue
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
