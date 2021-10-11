@@ -126,9 +126,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
 
         # Returns the action of the max value
-        return self.miniMax(gameState, depth=0, agent=0)[1]
+        return self.miniMax(gameState)[1]
 
-    def miniMax(self, state, depth, agent):
+    def miniMax(self, state, depth=0, agent=0):
         """
         Calls the correct method for calculating next action, value pair for state.
         This has to be done because it needs to handle multiple min-layers in Minimax-tree
@@ -146,7 +146,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             agent = 0
 
         # Check if its Pac's or Ghost's turn!
-        if agent == 0:  
+        if agent == 0:
             return self.maxValue(state, depth, agent)
         else:
             return self.minValue(state, depth, agent)
@@ -190,10 +190,79 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def getAction(self, gameState):
         """
-        Returns the minimax action using self.depth and self.evaluationFunction
+        Returns the minimax action from the current gameState using self.depth
+        and self.evaluationFunction.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        alpha = float("-inf"), None
+        beta = float("inf"), None
+
+        # Returns the action of the max value
+        return self.miniMax(gameState, 0, 0, alpha, beta)[1]
+
+    def miniMax(self, state, depth, agent, alpha, beta):
+        """
+        Calls the correct method for calculating next action, value pair for state.
+        This has to be done because it needs to handle multiple min-layers in Minimax-tree
+        :param state: Current state of game
+        :param depth: Current depth of Minimax-tree
+        :return: action, action_evaluation (either MIN or MAX)
+        """
+
+        # Check for terminal state
+        if depth == self.depth * state.getNumAgents() or state.isWin() or state.isLose():
+            return self.evaluationFunction(state), None
+
+        # Reset on cycle complete
+        if agent >= state.getNumAgents():
+            agent = 0
+
+        # Check if its Pac's or Ghost's turn!
+        if agent == 0:
+            return self.maxValue(state, depth, agent, alpha, beta)
+        else:
+            return self.minValue(state, depth, agent, alpha, beta)
+
+    # PACMAN
+    def maxValue(self, state, currentDepth, agent, alpha, beta):
+
+        # Init node
+        value = float("-inf"), Directions.STOP
+
+        for action in state.getLegalActions(agent):
+            # Recursive call to first ghost's state
+            nextValue = self.miniMax(state.generateSuccessor(
+                agent, action), currentDepth + 1, agent + 1, alpha, beta)[0]
+
+            # Choose the max value (and action) of the recursive call and the init value
+            value = max(value, (nextValue, action), key=lambda x: x[0])
+
+            # Check for pruning
+            alpha = max(alpha, value, key=lambda x: x[0])
+            if value[0] > beta[0]:
+                return value
+
+        return value
+
+    # GHOST
+    def minValue(self, state, currentDepth, agent, alpha, beta):
+
+        value = float("inf"), Directions.STOP
+
+        for action in state.getLegalActions(agent):
+            # Recursive call to next ghost's state
+            nextValue = self.miniMax(state.generateSuccessor(
+                agent, action), currentDepth + 1, agent + 1, alpha, beta)[0]
+
+            # Choose the min value (and action) of the recursive call and the init value
+            value = min(value, (nextValue, action), key=lambda x: x[0])
+
+            # Check for pruning
+            beta = min(beta, value, key=lambda x: x[0])
+            if value[0] < alpha[0]:
+                return value
+
+        return value
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
