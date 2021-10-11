@@ -247,6 +247,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     # GHOST
     def minValue(self, state, currentDepth, agent, alpha, beta):
 
+        # Init node
         value = float("inf"), Directions.STOP
 
         for action in state.getLegalActions(agent):
