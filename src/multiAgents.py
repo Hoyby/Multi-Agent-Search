@@ -129,13 +129,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return self.miniMax(gameState)[1]
 
     def miniMax(self, state, depth=0, agent=0):
-        """
-        Calls the correct method for calculating next action, value pair for state.
-        This has to be done because it needs to handle multiple min-layers in Minimax-tree
-        :param state: Current state of game
-        :param depth: Current depth of Minimax-tree
-        :return: action, action_evaluation (either MIN or MAX)
-        """
 
         # Check for terminal state
         if depth == self.depth * state.getNumAgents() or state.isWin() or state.isLose():
@@ -201,13 +194,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return self.miniMax(gameState, 0, 0, alpha, beta)[1]
 
     def miniMax(self, state, depth, agent, alpha, beta):
-        """
-        Calls the correct method for calculating next action, value pair for state.
-        This has to be done because it needs to handle multiple min-layers in Minimax-tree
-        :param state: Current state of game
-        :param depth: Current depth of Minimax-tree
-        :return: action, action_evaluation (either MIN or MAX)
-        """
 
         # Check for terminal state
         if depth == self.depth * state.getNumAgents() or state.isWin() or state.isLose():
