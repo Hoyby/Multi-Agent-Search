@@ -125,12 +125,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         and self.evaluationFunction.
         """
 
-        res = [(action, self.miniMax(gameState.generateSuccessor(0, action), 0, 1)) for action in
-               gameState.getLegalActions(0)]
-        res.sort(key=lambda k: k[1])
-
-        return res[-1][0]
-        # return self.miniMax(gameState, 0, 0)
+        # Returns the action of the max value
+        return self.miniMax(gameState, depth=0, agent=0)[1]
 
     def miniMax(self, state, depth, agent):
         """
@@ -142,54 +138,49 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
 
         # Check for terminal state
-        if depth == self.depth or state.isWin() or state.isLose():
-            return self.evaluationFunction(state)
+        if depth == self.depth * state.getNumAgents() or state.isWin() or state.isLose():
+            return self.evaluationFunction(state), None
 
-        res = []
+        # Reset on cycle complete
+        if agent >= state.getNumAgents():
+            agent = 0
 
-        if agent == 0 or agent >= state.getNumAgents()-1: # Pac's turn!
-            if agent >= state.getNumAgents()-1: # All agents have moved
-                depth += 1
-            res.append(self.maxValue(state, depth))
-            return self.maxValue(state, depth)
+        # Check if its Pac's or Ghost's turn!
+        if agent == 0:  
+            return self.maxValue(state, depth, agent)
         else:
             return self.minValue(state, depth, agent)
 
-
     # PACMAN
-    def maxValue(self, state, currentDepth):
+    def maxValue(self, state, currentDepth, agent):
 
-        value = float("-inf")
+        # Init node
+        value = float("-inf"), Directions.STOP
 
-        for action in state.getLegalActions(0):
+        for action in state.getLegalActions(agent):
+            # Recursive call to first ghost's state
+            nextValue = self.miniMax(state.generateSuccessor(
+                agent, action), currentDepth + 1, agent + 1)[0]
 
-            value = max(
-                value, 
-                self.miniMax(
-                    state.generateSuccessor(0, action), 
-                    currentDepth, 
-                    agent=1))
- 
+            # Choose the max value (and action) of the recursive call and the init value
+            value = max(value, (nextValue, action), key=lambda x: x[0])
+
         return value
-
-        
 
     # GHOST
     def minValue(self, state, currentDepth, agent):
 
-        value = float("inf")
+        value = float("inf"), Directions.STOP
+
         for action in state.getLegalActions(agent):
-            value = min(
-                value, 
-                self.miniMax(
-                    state.generateSuccessor(agent, action), 
-                    currentDepth, 
-                    agent+1) )
+            # Recursive call to next ghost's state
+            nextValue = self.miniMax(state.generateSuccessor(
+                agent, action), currentDepth + 1, agent + 1)[0]
+
+            # Choose the min value (and action) of the recursive call and the init value
+            value = min(value, (nextValue, action), key=lambda x: x[0])
 
         return value
-
-
-
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -203,6 +194,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -219,6 +211,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -228,6 +221,7 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
 
 # Abbreviation
 better = betterEvaluationFunction
